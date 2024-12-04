@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>داشبورد بیمار</title>
+  <style>
+    /* استایل‌های مورد نیاز را اینجا اضافه کنید */
+    .doctor-item {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>لیست دکترها</h2>
+  <div id="doctorList"></div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const patientId = localStorage.getItem('patientId');
+    if (!patientId) {
+      alert('لطفاً ابتدا وارد شوید');
+      window.location.href = '/patient-login.html';
+      return;
+    }
+
+    fetch('/api/doctors')
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(doctors => {
+              const doctorList = document.getElementById('doctorList');
+              if (doctors.length === 0) {
+                doctorList.innerHTML = '<p>هیچ دکتری یافت نشد.</p>';
+              } else {
+                doctors.forEach(doctor => {
+                  const doctorElement = document.createElement('div');
+                  doctorElement.className = 'doctor-item';
+                  doctorElement.innerHTML = `
+              <h3>${doctor.name}</h3>
+              <p>تخصص: ${doctor.specialization}</p>
+              <button onclick="viewAvailability(${doctor.id})">مشاهده زمان‌های خالی</button>
+            `;
+                  doctorList.appendChild(doctorElement);
+                });
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('خطا در دریافت لیست دکترها: ' + error.message);
+            });
+  });
+
+  function viewAvailability(doctorId) {
+    window.location.href = `/doctor-availability?doctorId=${doctorId}`;
+  }
+</script>
+</body>
+</html>

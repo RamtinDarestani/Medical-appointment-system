@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>زمان‌های خالی دکتر</title>
+    <style>
+        /* استایل‌های مورد نیاز را اینجا اضافه کنید */
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>زمان‌های خالی دکتر</h2>
+    <div id="availabilityList"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const doctorId = urlParams.get('doctorId');
+
+        fetch(`/api/doctors/${doctorId}/available-times`)
+            .then(response => response.json())
+            .then(availabilities => {
+                const availabilityList = document.getElementById('availabilityList');
+                availabilities.forEach(availability => {
+                    const availabilityElement = document.createElement('div');
+                    availabilityElement.innerHTML = `
+                            <p>تاریخ: ${availability.startTime}</p>
+                            <button onclick="bookAppointment(${availability.id})">رزرو نوبت</button>
+                        `;
+                    availabilityList.appendChild(availabilityElement);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('خطا در دریافت زمان‌های خالی');
+            });
+    });
+
+    function bookAppointment(availabilityId) {
+        const patientId = localStorage.getItem('patientId');
+        if (!patientId) {
+            alert('لطفاً ابتدا وارد شوید');
+            return;
+        }
+
+        fetch('/api/appointments/book', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                patientId: patientId,
+                availabilityId: availabilityId
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('نوبت با موفقیت رزرو شد');
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('خطا در رزرو نوبت. لطفاً دوباره تلاش کنید.');
+            });
+    }
+</script>
+</body>
+</html>

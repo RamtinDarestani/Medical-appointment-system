@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت زمان‌های خالی</title>
+    <style>
+        body {
+            font-family: 'Vazir', Arial, sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .week-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .day {
+            flex-basis: calc(33.333% - 10px);
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .day h3 {
+            text-align: center;
+            margin-top: 0;
+            color: #4a90e2;
+        }
+        .time-slot {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .time-slot.selected {
+            background-color: #4a90e2;
+            color: white;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>مدیریت زمان‌های خالی هفتگی</h2>
+    <div class="week-container" id="weekContainer"></div>
+    <button id="saveSchedule">ذخیره برنامه زمانی</button>
+</div>
+
+<script>
+    const days = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
+    const timeSlots = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'];
+
+    function createWeekSchedule() {
+        const weekContainer = document.getElementById('weekContainer');
+        days.forEach(day => {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            dayElement.innerHTML = `<h3>${day}</h3>`;
+            timeSlots.forEach(time => {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'time-slot';
+                timeSlot.textContent = time;
+                timeSlot.addEventListener('click', () => {
+                    timeSlot.classList.toggle('selected');
+                });
+                dayElement.appendChild(timeSlot);
+            });
+            weekContainer.appendChild(dayElement);
+        });
+    }
+
+    function saveSchedule() {
+        const doctorId = localStorage.getItem('doctorId');
+        console.log('Doctor ID:', doctorId);
+
+        const schedule = {};
+        const today = new Date();
+
+        days.forEach((day, index) => {
+            const date = new Date(today.getTime() + index * 24 * 60 * 60 * 1000);
+            const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+            schedule[formattedDate] = [];
+            document.querySelectorAll(`.day:nth-child(${index + 1}) .time-slot.selected`).forEach(slot => {
+                // تغییر این خط
+                schedule[formattedDate].push(slot.textContent + ':00');
+            });
+        });
+
+        console.log('Schedule being sent:', JSON.stringify(schedule));
+
+        fetch(`/api/doctors/${doctorId}/availability`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(schedule)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log('Server response:', data);
+                alert('برنامه زمانی با موفقیت ذخیره شد');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('خطا: ' + error.message);
+            });
+
+
+    }
+
+    createWeekSchedule();
+    document.getElementById('saveSchedule').addEventListener('click', saveSchedule);
+</script>
+</body>
+</html>
