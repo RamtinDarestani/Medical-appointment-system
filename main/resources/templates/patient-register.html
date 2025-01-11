@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ثبت نام بیمار</title>
+  <style>
+    /* استایل‌های مورد نیاز را اینجا اضافه کنید */
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>ثبت نام بیمار</h2>
+  <form id="patientRegisterForm">
+    <input type="text" id="name" placeholder="نام" required>
+    <input type="email" id="email" placeholder="ایمیل" required>
+    <input type="tel" id="phone" placeholder="شماره موبایل" required>
+    <input type="password" id="password" placeholder="رمز عبور" required>
+    <button type="submit">ثبت نام</button>
+  </form>
+</div>
+
+<script>
+  document.getElementById('patientRegisterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const patientData = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phoneNumber: document.getElementById('phone').value,
+      password: document.getElementById('password').value
+    };
+
+    fetch('/api/patients/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(patientData)
+    })
+            .then(response => response.json())
+            .then(data => {
+              alert('ثبت نام با موفقیت انجام شد');
+              // بعد از ثبت نام، کاربر را به صفحه ورود هدایت کنید
+              window.location.href = '/patient-login.html';
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('خطا در ثبت نام. لطفاً دوباره تلاش کنید.');
+            });
+  });
+</script>
+</body>
+</html>

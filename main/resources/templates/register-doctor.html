@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>login doctor</title>
+</head>
+<body>
+<h2>login new doctor</h2>
+<form id="doctorForm">
+    <label for="name">name : </label>
+    <input type="text" id="name" name="name" required><br><br>
+    <label for="specialization">takhasos : </label>
+    <input type="text" id="specialization" name="specialization" required><br><br>
+    <label for="email">email : </label>
+    <input type="email" id="email" name="email" required><br><br>
+    <label for="password">password : </label>
+    <input type="password" id="password" name="password" required><br><br>
+    <label for="phoneNumber">phone number : </label>
+    <input type="tel" id="phoneNumber" name="phoneNumber"><br><br>
+    <label for="address">addres : </label>
+    <textarea id="address" name="address"></textarea><br><br>
+    <button type="submit">login</button>
+</form>
+
+<script>
+    document.getElementById('doctorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var formData = {
+            name: document.getElementById('name').value,
+            specialization: document.getElementById('specialization').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            phoneNumber: document.getElementById('phoneNumber').value,
+            address: document.getElementById('address').value
+        };
+
+        fetch('/api/doctors', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('doctor login scsessfully');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('خطا در ثبت نام. لطفاً دوباره تلاش کنید.');
+            });
+    });
+</script>
+</body>
+</html>
